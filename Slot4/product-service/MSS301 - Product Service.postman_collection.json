@@ -1,0 +1,352 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+    "name": "MSS301 - Product Service",
+    "description": "Postman test collection for MSS301 Product Service (Slot 4) covering TODO 1 to 5.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Create Product",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 201 Created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "",
+              "pm.test(\"Response has id, name, description, price\", function () {",
+              "    pm.expect(json.id).to.be.a(\"string\");",
+              "    pm.expect(json.name).to.eql(\"iPhone 15\");",
+              "    pm.expect(json.description).to.eql(\"Apple phone\");",
+              "    pm.expect(json.price).to.eql(999.99);",
+              "});",
+              "",
+              "pm.environment.set(\"productId\", json.id);",
+              "pm.environment.set(\"productCountBeforeUpdate\", null);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"iPhone 15\",\n  \"description\": \"Apple phone\",\n  \"price\": 999.99\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "products"
+          ]
+        }
+      }
+    },
+    {
+      "name": "02 - Get All Products",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "",
+              "pm.test(\"List contains the created product\", function () {",
+              "    const found = json.find(p => p.id === pm.environment.get(\"productId\"));",
+              "    pm.expect(found).to.not.be.undefined;",
+              "});",
+              "",
+              "pm.environment.set(\"productCountBeforeUpdate\", json.length);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "products"
+          ]
+        }
+      }
+    },
+    {
+      "name": "03 - Update Product (Success)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "",
+              "pm.test(\"Id stays the same (not a new record)\", function () {",
+              "    pm.expect(json.id).to.eql(pm.environment.get(\"productId\"));",
+              "});",
+              "",
+              "pm.test(\"Fields are updated\", function () {",
+              "    pm.expect(json.name).to.eql(\"iPhone 15 Pro\");",
+              "    pm.expect(json.description).to.eql(\"Updated\");",
+              "    pm.expect(json.price).to.eql(1199.99);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"iPhone 15 Pro\",\n  \"description\": \"Updated\",\n  \"price\": 1199.99\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/products/{{productId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "products",
+            "{{productId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "02b - Get All Products (after update)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "const before = pm.environment.get(\"productCountBeforeUpdate\");",
+              "if (before !== null && before !== undefined) {",
+              "    pm.test(\"Product count unchanged after update (no duplicate created)\", function () {",
+              "        pm.expect(json.length).to.eql(Number(before));",
+              "    });",
+              "}",
+              "",
+              "pm.test(\"Product has updated fields in DB\", function () {",
+              "    const found = json.find(p => p.id === pm.environment.get(\"productId\"));",
+              "    pm.expect(found).to.not.be.undefined;",
+              "    pm.expect(found.name).to.eql(\"iPhone 15 Pro\");",
+              "    pm.expect(found.description).to.eql(\"Updated\");",
+              "    pm.expect(found.price).to.eql(1199.99);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "products"
+          ]
+        }
+      }
+    },
+    {
+      "name": "04 - Update Product (Not Found)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 404 Not Found\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "pm.test(\"Body contains not-found message\", function () {",
+              "    pm.expect(pm.response.text()).to.include(\"id-khong-ton-tai-999\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Ghost\",\n  \"description\": \"Should not exist\",\n  \"price\": 1.0\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/products/id-khong-ton-tai-999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "products",
+            "id-khong-ton-tai-999"
+          ]
+        }
+      }
+    },
+    {
+      "name": "05 - Delete Product (Success)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 204 No Content\", function () {",
+              "    pm.response.to.have.status(204);",
+              "});",
+              "",
+              "pm.test(\"Body is empty\", function () {",
+              "    pm.expect(pm.response.text()).to.eql(\"\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/products/{{productId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "products",
+            "{{productId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "02c - Get All Products (after delete)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "",
+              "pm.test(\"Deleted product no longer in list\", function () {",
+              "    const stillThere = json.find(p => p.id === pm.environment.get(\"productId\"));",
+              "    pm.expect(stillThere).to.be.undefined;",
+              "});",
+              "",
+              "const before = pm.environment.get(\"productCountBeforeUpdate\");",
+              "if (before !== null && before !== undefined) {",
+              "    pm.test(\"Product count decreased by 1\", function () {",
+              "        pm.expect(json.length).to.eql(Number(before) - 1);",
+              "    });",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "products"
+          ]
+        }
+      }
+    },
+    {
+      "name": "06 - Delete Product (Not Found)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status is 404 Not Found\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/products/{{productId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "products",
+            "{{productId}}"
+          ]
+        }
+      }
+    }
+  ]
+}
