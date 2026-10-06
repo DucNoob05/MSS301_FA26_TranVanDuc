@@ -1,0 +1,4243 @@
+{
+  "info": {
+    "_postman_id": "c6a2b3c4-e5f6-47a8-9b0c-1d2e3f4a5b6c",
+    "name": "FUCinemaBookingSystem",
+    "description": "Cinema Ticket Booking System using API Gateway - Assignment 1 Collection Runner",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test(\"Response time < 3000ms\", () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "01-Auth",
+      "item": [
+        {
+          "name": "1.1 Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Role is ADMIN\", () => pm.expect(json.role).to.eql(\"ADMIN\"));",
+                  "pm.test(\"Has Bearer token\", () => {",
+                  "    pm.expect(json.tokenType).to.eql(\"Bearer\");",
+                  "    pm.expect(json.accessToken.split(\".\")).to.have.lengthOf(3);",
+                  "});",
+                  "pm.environment.set(\"adminToken\", json.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@fucinema.com\",\n  \"password\": \"@@abc123@@\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/auth/login",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.2 Login Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Role is CUSTOMER\", () => pm.expect(json.role).to.eql(\"CUSTOMER\"));",
+                  "pm.test(\"userId = 1\", () => pm.expect(json.userId).to.eql(1));",
+                  "pm.environment.set(\"customerToken\", json.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"an@gmail.com\",\n  \"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/auth/login",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.3 Login Customer - Wrong password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+                  "const err = pm.response.json();",
+                  "pm.test(\"Error body format\", () => {",
+                  "    pm.expect(err).to.have.all.keys(\"timestamp\", \"status\", \"error\", \"message\", \"path\");",
+                  "    pm.expect(err.status).to.eql(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"an@gmail.com\",\n  \"password\": \"sai-mat-khau\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/auth/login",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.4 Login Customer - Inactive account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));",
+                  "const err = pm.response.json();",
+                  "pm.test(\"Error body format\", () => {",
+                  "    pm.expect(err).to.have.all.keys(\"timestamp\", \"status\", \"error\", \"message\", \"path\");",
+                  "    pm.expect(err.status).to.eql(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"chi@gmail.com\",\n  \"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/auth/login",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.5 Login Customer - Validation error",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "const err = pm.response.json();",
+                  "pm.test(\"Error body format\", () => {",
+                  "    pm.expect(err).to.have.all.keys(\"timestamp\", \"status\", \"error\", \"message\", \"path\");",
+                  "    pm.expect(err.status).to.eql(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"abc\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/auth/login",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.6 Get Profile - No Auth",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/customers/me",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.7 Get Profile - Invalid Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "abc.def.ghi",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/customers/me",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02-Customer",
+      "item": [
+        {
+          "name": "2.1 Register Customer",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set(\"newEmail\", `user${Date.now()}@gmail.com`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Status ACTIVE\", () => pm.expect(json.customerStatus).to.eql(\"ACTIVE\"));",
+                  "pm.test(\"Password is NOT returned\", () => pm.expect(json).to.not.have.property(\"password\"));",
+                  "pm.environment.set(\"newCustomerId\", json.customerId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"Phạm Thị Dung\",\n  \"telephone\": \"0987654321\",\n  \"email\": \"{{newEmail}}\",\n  \"customerBirthday\": \"2004-03-15\",\n  \"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/customers/register",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.2 Register Customer - Duplicate Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"Phạm Thị Dung\",\n  \"telephone\": \"0987654321\",\n  \"email\": \"an@gmail.com\",\n  \"customerBirthday\": \"2004-03-15\",\n  \"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/customers/register",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.3 Register Customer - Invalid Payload",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "const msg = pm.response.json().message;",
+                  "[\"customerName\", \"telephone\", \"email\", \"customerBirthday\", \"password\"]",
+                  "    .forEach(f => pm.test(`Message mentions ${f}`, () => pm.expect(msg).to.include(f)));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"\",\n  \"telephone\": \"123\",\n  \"email\": \"x\",\n  \"customerBirthday\": \"2099-01-01\",\n  \"password\": \"1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/customers/register",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.4 Login Customer 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.environment.set(\"customer2Token\", pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{newEmail}}\",\n  \"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/auth/login",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.5 Get My Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Email is an@gmail.com\", () => pm.expect(pm.response.json().email).to.eql(\"an@gmail.com\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/customers/me",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.6 Update My Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Profile updated\", () => {",
+                  "    pm.expect(json.customerName).to.eql(\"Nguyễn Văn An (updated)\");",
+                  "    pm.expect(json.telephone).to.eql(\"0905999999\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"Nguyễn Văn An (updated)\",\n  \"telephone\": \"0905999999\",\n  \"customerBirthday\": \"2002-05-10\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/customers/me",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.7 Change Password - Wrong Old Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer2Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"sai\",\n  \"newPassword\": \"654321\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/customers/me/password",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "me",
+                "password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.8 Change Password - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer2Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"123456\",\n  \"newPassword\": \"654321\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/customers/me/password",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "me",
+                "password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.9 Login Customer 2 with New Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.environment.set(\"customer2Token\", pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{newEmail}}\",\n  \"password\": \"654321\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/auth/login",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.10 Admin API called by Customer - Forbidden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/customers",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.11 Admin Search Customers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const list = pm.response.json();",
+                  "pm.test(\"At least 3 customers\", () => pm.expect(list.length).to.be.at.least(3));",
+                  "pm.test(\"No password in list\", () => list.forEach(c => pm.expect(c).to.not.have.property(\"password\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/customers?keyword=gmail",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers"
+              ],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "gmail"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.12 Admin Get Customer - Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/customers/99999",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "99999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.13 Admin Create Customer",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set(\"adminEmail2\", `staff${Date.now()}@gmail.com`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.environment.set(\"adminCreatedId\", pm.response.json().customerId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"Khách hàng do Admin tạo\",\n  \"telephone\": \"0911222333\",\n  \"email\": \"{{adminEmail2}}\",\n  \"customerBirthday\": \"1999-09-09\",\n  \"customerStatus\": \"ACTIVE\",\n  \"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/customers",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.14 Admin Update Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"Khách hàng đã đổi tên\",\n  \"telephone\": \"0911222333\",\n  \"email\": \"{{adminEmail2}}\",\n  \"customerBirthday\": \"1999-09-09\",\n  \"customerStatus\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/customers/{{adminCreatedId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "{{adminCreatedId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.15 Admin Delete Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/customers/{{adminCreatedId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "{{adminCreatedId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.16 Admin Get Deleted Customer - INACTIVE",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Soft deleted -> INACTIVE\", () => pm.expect(pm.response.json().customerStatus).to.eql(\"INACTIVE\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/customers/{{adminCreatedId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "{{adminCreatedId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.17 Admin Call Profile - Forbidden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/customers/me",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.18 Gateway Overrides Spoofed Header",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Gateway overrides spoofed X-User-Id\", () => pm.expect(pm.response.json().email).to.eql(\"an@gmail.com\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "2"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/customers/me",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03-Genre-Room",
+      "item": [
+        {
+          "name": "3.1 Get All Genres",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"At least 5 genres\", () => pm.expect(pm.response.json().length).to.be.at.least(5));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/genres",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "genres"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.2 Create Genre",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.environment.set(\"genreId\", pm.response.json().genreId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"genreName\": \"Tài liệu {{$timestamp}}\",\n  \"description\": \"Phim tài liệu\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/genres",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "genres"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.3 Create Genre - Customer Forbidden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"genreName\": \"Tài liệu {{$timestamp}}\",\n  \"description\": \"Phim tài liệu\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/genres",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "genres"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.4 Create Duplicate Genre",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"genreName\": \"Hành động\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/genres",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "genres"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.5 Update Genre",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"genreName\": \"Tài liệu {{$timestamp}}\",\n  \"description\": \"Đã cập nhật\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/genres/{{genreId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "genres",
+                "{{genreId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.6 Delete Genre In Use - Conflict",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/genres/{{seedGenreActionId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "genres",
+                "{{seedGenreActionId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.7 Create Room",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "const room = pm.response.json();",
+                  "pm.test(\"totalSeats = seatRows x seatsPerRow\", () => pm.expect(room.totalSeats).to.eql(40));",
+                  "pm.environment.set(\"roomId\", room.roomId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomName\": \"Room Test {{$timestamp}}\",\n  \"roomType\": \"STANDARD\",\n  \"seatRows\": 5,\n  \"seatsPerRow\": 8,\n  \"roomStatus\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/rooms",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.8 Get All Rooms - Unauthorized",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/rooms",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.9 Create Room - Invalid Enum",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomName\": \"X\",\n  \"roomType\": \"VIP\",\n  \"seatRows\": 0,\n  \"seatsPerRow\": 8,\n  \"roomStatus\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/rooms",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.10 Create Room - Invalid SeatRows",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomName\": \"Y\",\n  \"roomType\": \"IMAX\",\n  \"seatRows\": 0,\n  \"seatsPerRow\": 8,\n  \"roomStatus\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/rooms",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04-Movie",
+      "item": [
+        {
+          "name": "4.1 Create Movie",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "const m = pm.response.json();",
+                  "pm.test(\"Genre mapped\", () => pm.expect(m.genreId).to.eql(pm.environment.get(\"genreId\")));",
+                  "pm.test(\"movieId is ObjectId\", () => pm.expect(m.movieId).to.match(/^[0-9a-f]{24}$/));",
+                  "pm.environment.set(\"movieId\", m.movieId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Hành Trình Phương Nam\",\n  \"description\": \"Phim tài liệu về miền Tây sông nước.\",\n  \"director\": \"Lê Hoàng\",\n  \"durationMinutes\": 120,\n  \"language\": \"Tiếng Việt\",\n  \"ageRating\": \"P\",\n  \"releaseDate\": \"2026-10-01\",\n  \"genreId\": \"{{genreId}}\",\n  \"movieStatus\": \"NOW_SHOWING\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/movies",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "movies"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.2 Search Movies - Keyword galaxy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Contains Galaxy Rangers\", () => {",
+                  "    const list = pm.response.json();",
+                  "    pm.expect(list.some(m => m.title.includes(\"Galaxy Rangers\"))).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/movies?keyword=galaxy",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "movies"
+              ],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "galaxy"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.3 Filter Movies - Status & Genre",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.response.json().forEach(m => pm.test(`Movie ${m.movieId} matches filter`, () => {",
+                  "    pm.expect(m.movieStatus).to.eql(\"NOW_SHOWING\");",
+                  "    pm.expect(m.genreId).to.eql(pm.environment.get(\"seedGenreScifiId\"));",
+                  "}));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/movies?status=NOW_SHOWING&genreId={{seedGenreScifiId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "movies"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "NOW_SHOWING"
+                },
+                {
+                  "key": "genreId",
+                  "value": "{{seedGenreScifiId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.4 Update Movie",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Hành Trình Phương Nam\",\n  \"description\": \"Phim tài liệu về miền Tây sông nước.\",\n  \"director\": \"Lê Hoàng\",\n  \"durationMinutes\": 120,\n  \"language\": \"Tiếng Việt\",\n  \"ageRating\": \"P\",\n  \"releaseDate\": \"2026-10-01\",\n  \"genreId\": \"{{genreId}}\",\n  \"movieStatus\": \"NOW_SHOWING\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/movies/{{movieId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "movies",
+                "{{movieId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.5 Get Movie - Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/movies/{{notFoundId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "movies",
+                "{{notFoundId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.6 Create Movie - Invalid Duration",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Hành Trình Phương Nam\",\n  \"description\": \"Phim tài liệu về miền Tây sông nước.\",\n  \"director\": \"Lê Hoàng\",\n  \"durationMinutes\": 10,\n  \"language\": \"Tiếng Việt\",\n  \"ageRating\": \"P\",\n  \"releaseDate\": \"2026-10-01\",\n  \"genreId\": \"{{genreId}}\",\n  \"movieStatus\": \"NOW_SHOWING\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/movies",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "movies"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.7 Create Movie - Genre Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Hành Trình Phương Nam\",\n  \"description\": \"Phim tài liệu về miền Tây sông nước.\",\n  \"director\": \"Lê Hoàng\",\n  \"durationMinutes\": 120,\n  \"language\": \"Tiếng Việt\",\n  \"ageRating\": \"P\",\n  \"releaseDate\": \"2026-10-01\",\n  \"genreId\": \"{{notFoundId}}\",\n  \"movieStatus\": \"NOW_SHOWING\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/movies",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "movies"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.8 Delete Genre with Movies - Conflict",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/genres/{{genreId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "genres",
+                "{{genreId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05-Showtime",
+      "item": [
+        {
+          "name": "5.1 Create Showtime",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const pad = n => String(n).padStart(2, \"0\");",
+                  "const d = new Date();",
+                  "d.setDate(d.getDate() + 7);",
+                  "const day = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;",
+                  "pm.environment.set(\"futureDate\", day);",
+                  "pm.environment.set(\"futureStart\", `${day}T19:00:00`);",
+                  "pm.environment.set(\"futureStartOverlap\", `${day}T20:00:00`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "const s = pm.response.json();",
+                  "pm.test(\"endTime = startTime + duration (120')\", () => {",
+                  "    const minutes = (new Date(s.endTime) - new Date(s.startTime)) / 60000;",
+                  "    pm.expect(minutes).to.eql(120);",
+                  "});",
+                  "pm.test(\"Status SCHEDULED\", () => pm.expect(s.showtimeStatus).to.eql(\"SCHEDULED\"));",
+                  "pm.environment.set(\"showtimeId\", s.showtimeId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"movieId\": \"{{movieId}}\",\n  \"roomId\": \"{{roomId}}\",\n  \"startTime\": \"{{futureStart}}\",\n  \"ticketPrice\": 95000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/showtimes",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "showtimes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.2 Create Showtime - Overlap Same Room",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409 - overlap\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"movieId\": \"{{movieId}}\",\n  \"roomId\": \"{{roomId}}\",\n  \"startTime\": \"{{futureStartOverlap}}\",\n  \"ticketPrice\": 95000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/showtimes",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "showtimes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.3 Create Showtime - Same Time Different Room",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.environment.set(\"showtime2Id\", pm.response.json().showtimeId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"movieId\": \"{{movieId}}\",\n  \"roomId\": \"{{seedRoom2Id}}\",\n  \"startTime\": \"{{futureStart}}\",\n  \"ticketPrice\": 95000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/showtimes",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "showtimes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.4 Create Showtime - Movie Ended",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"movieId\": \"{{seedMovieEndedId}}\",\n  \"roomId\": \"{{roomId}}\",\n  \"startTime\": \"{{futureStart}}\",\n  \"ticketPrice\": 95000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/showtimes",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "showtimes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.5 Create Showtime - Room Maintenance",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"movieId\": \"{{movieId}}\",\n  \"roomId\": \"{{seedRoomMaintenanceId}}\",\n  \"startTime\": \"{{futureStart}}\",\n  \"ticketPrice\": 95000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/showtimes",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "showtimes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.6 Create Showtime - Start Time in Past",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"movieId\": \"{{movieId}}\",\n  \"roomId\": \"{{roomId}}\",\n  \"startTime\": \"2020-01-01T10:00:00\",\n  \"ticketPrice\": 95000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/showtimes",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "showtimes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.7 Search Showtimes by Movie and Date",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const list = pm.response.json();",
+                  "pm.test(\"Filter by movie & date\", () => {",
+                  "    pm.expect(list.length).to.be.at.least(1);",
+                  "    list.forEach(s => {",
+                  "        pm.expect(s.movieId).to.eql(pm.environment.get(\"movieId\"));",
+                  "        pm.expect(s.startTime.substring(0, 10)).to.eql(pm.environment.get(\"futureDate\"));",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/showtimes?movieId={{movieId}}&date={{futureDate}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "showtimes"
+              ],
+              "query": [
+                {
+                  "key": "movieId",
+                  "value": "{{movieId}}"
+                },
+                {
+                  "key": "date",
+                  "value": "{{futureDate}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.8 Get Showtime by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const s = pm.response.json();",
+                  "pm.test(\"Seat rows and per row match\", () => {",
+                  "    pm.expect(s.seatRows).to.eql(5);",
+                  "    pm.expect(s.seatsPerRow).to.eql(8);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/showtimes/{{showtimeId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "showtimes",
+                "{{showtimeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.9 Cancel Showtime 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/showtimes/{{showtime2Id}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "showtimes",
+                "{{showtime2Id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.10 Verify Cancelled Showtime",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Status is CANCELLED\", () => pm.expect(pm.response.json().showtimeStatus).to.eql(\"CANCELLED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/showtimes/{{showtime2Id}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "showtimes",
+                "{{showtime2Id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.11 Delete Room with Showtimes - Conflict",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/rooms/{{roomId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "{{roomId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.12 Delete Movie with Showtimes - Conflict",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/movies/{{movieId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "movies",
+                "{{movieId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.13 Create Showtime - Movie Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"movieId\": \"{{notFoundId}}\",\n  \"roomId\": \"{{roomId}}\",\n  \"startTime\": \"{{futureStart}}\",\n  \"ticketPrice\": 95000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/showtimes",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "showtimes"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06-Booking",
+      "item": [
+        {
+          "name": "6.1 Get Seat Map - Empty",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const m = pm.response.json();",
+                  "pm.test(\"40 seats, all available\", () => {",
+                  "    pm.expect(m.totalSeats).to.eql(40);",
+                  "    pm.expect(m.availableSeats).to.eql(40);",
+                  "    pm.expect(m.bookedSeats).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings/showtimes/{{showtimeId}}/seats",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "showtimes",
+                "{{showtimeId}}",
+                "seats"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.2 Create Booking 1 (E5, E6)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"CONFIRMED with 2 tickets\", () => {",
+                  "    pm.expect(b.bookingStatus).to.eql(\"CONFIRMED\");",
+                  "    pm.expect(b.details).to.have.lengthOf(2);",
+                  "});",
+                  "pm.test(\"totalPrice = sum of ticket prices (server-side)\", () => {",
+                  "    const sum = b.details.reduce((acc, d) => acc + Number(d.price), 0);",
+                  "    pm.expect(Number(b.totalPrice)).to.eql(sum);",
+                  "    pm.expect(Number(b.totalPrice)).to.eql(190000);",
+                  "});",
+                  "pm.test(\"Snapshot movie info\", () => pm.expect(b.details[0].movieTitle).to.eql(\"Hành Trình Phương Nam\"));",
+                  "pm.environment.set(\"bookingId\", b.bookingId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"E5\"\n    },\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"E6\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/bookings",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.3 Create Booking - Seat Taken",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409 - seat taken\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Message mentions seat\", () => pm.expect(pm.response.json().message).to.include(\"E5\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer2Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"E5\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/bookings",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.4 Create Booking - Invalid Column E9",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer2Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"E9\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/bookings",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.5 Create Booking - Invalid Row F1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer2Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"F1\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/bookings",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.6 Create Booking - Duplicate Seat In Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer2Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"A2\"\n    },\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"A2\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/bookings",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.7 Create Booking - Showtime Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer2Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"showtimeId\": \"{{notFoundId}}\",\n      \"seatCode\": \"A1\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/bookings",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.8 Create Booking - Cancelled Showtime",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer2Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"showtimeId\": \"{{showtime2Id}}\",\n      \"seatCode\": \"A1\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/bookings",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.9 Create Booking - Exceed Max 8 Seats",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer2Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"A1\"\n    },\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"A2\"\n    },\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"A3\"\n    },\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"A4\"\n    },\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"A5\"\n    },\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"A6\"\n    },\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"A7\"\n    },\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"A8\"\n    },\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"B1\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/bookings",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.10 Create Booking - Empty Items",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer2Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/bookings",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.11 Create Booking - Admin Forbidden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"E5\"\n    },\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"E6\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/bookings",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.12 Create Booking - Unauthorized",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"E5\"\n    },\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"E6\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/bookings",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.13 Create Booking 2 (A1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.environment.set(\"booking2Id\", pm.response.json().bookingId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer2Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"A1\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/bookings",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.14 Get Seat Map - After Bookings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const m = pm.response.json();",
+                  "pm.test(\"Booked seats updated\", () => {",
+                  "    pm.expect(m.bookedSeats).to.have.members([\"A1\", \"E5\", \"E6\"]);",
+                  "    pm.expect(m.availableSeats).to.eql(37);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings/showtimes/{{showtimeId}}/seats",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "showtimes",
+                "{{showtimeId}}",
+                "seats"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "07-History-Cancel",
+      "item": [
+        {
+          "name": "7.1 Get My Bookings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const list = pm.response.json();",
+                  "pm.test(\"Only my bookings\", () => list.forEach(b => pm.expect(b.customerId).to.eql(1)));",
+                  "pm.test(\"Sorted by bookingDate DESC\", () => {",
+                  "    for (let i = 1; i < list.length; i++) {",
+                  "        pm.expect(list[i - 1].bookingDate >= list[i].bookingDate).to.be.true;",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings/my",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "my"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.2 Get Booking by ID - Not Owner Forbidden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer2Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings/{{bookingId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.3 Get Booking by ID - Admin Allowed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings/{{bookingId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.4 Cancel Booking - Not Owner Forbidden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings/{{booking2Id}}/cancel",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "{{booking2Id}}",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.5 Cancel Booking 2 - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Cancelled\", () => pm.expect(pm.response.json().bookingStatus).to.eql(\"CANCELLED\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer2Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings/{{booking2Id}}/cancel",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "{{booking2Id}}",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.6 Cancel Booking 2 - Already Cancelled",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer2Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings/{{booking2Id}}/cancel",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "{{booking2Id}}",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.7 Re-book Released Seat A1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Seat A1 can be re-booked after cancel\", () => pm.response.to.have.status(201));",
+                  "pm.environment.set(\"booking3Id\", pm.response.json().bookingId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"showtimeId\": \"{{showtimeId}}\",\n      \"seatCode\": \"A1\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway}}/api/bookings",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.8 Admin Get All Bookings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.9 Admin Get My Bookings - Forbidden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings/my",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "my"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.10 Admin Get Nonexistent Booking - Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings/99999",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "99999"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "08-Report",
+      "item": [
+        {
+          "name": "8.1 Generate Revenue Report - Today",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const pad = n => String(n).padStart(2, \"0\");",
+                  "const d = new Date();",
+                  "pm.environment.set(\"today\", `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "",
+                  "pm.test(\"Summary is consistent\", () => {",
+                  "    pm.expect(r.totalBookings).to.eql(r.bookings.length);",
+                  "    const tickets = r.bookings.reduce((a, b) => a + b.details.length, 0);",
+                  "    const revenue = r.bookings.reduce((a, b) => a + Number(b.totalPrice), 0);",
+                  "    pm.expect(r.totalTickets).to.eql(tickets);",
+                  "    pm.expect(Number(r.totalRevenue)).to.eql(revenue);",
+                  "});",
+                  "pm.test(\"Only CONFIRMED bookings\", () =>",
+                  "    r.bookings.forEach(b => pm.expect(b.bookingStatus).to.eql(\"CONFIRMED\")));",
+                  "pm.test(\"Cancelled booking excluded\", () => {",
+                  "    const ids = r.bookings.map(b => b.bookingId);",
+                  "    pm.expect(ids).to.not.include(Number(pm.environment.get(\"booking2Id\")));",
+                  "});",
+                  "pm.test(\"bookings sorted by bookingDate DESC\", () => {",
+                  "    for (let i = 1; i < r.bookings.length; i++)",
+                  "        pm.expect(r.bookings[i - 1].bookingDate >= r.bookings[i].bookingDate).to.be.true;",
+                  "});",
+                  "pm.test(\"revenueByMovie sorted by revenue DESC\", () => {",
+                  "    for (let i = 1; i < r.revenueByMovie.length; i++)",
+                  "        pm.expect(Number(r.revenueByMovie[i - 1].revenue)).to.be.at.least(Number(r.revenueByMovie[i].revenue));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings/report?startDate={{today}}&endDate={{today}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "report"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "{{today}}"
+                },
+                {
+                  "key": "endDate",
+                  "value": "{{today}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.2 Revenue Report - Invalid Date Range (start > end)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings/report?startDate=2026-12-31&endDate=2026-01-01",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "report"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2026-12-31"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2026-01-01"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.3 Revenue Report - Customer Forbidden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings/report?startDate={{today}}&endDate={{today}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "report"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "{{today}}"
+                },
+                {
+                  "key": "endDate",
+                  "value": "{{today}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.4 Revenue Report - Missing endDate Parameter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings/report?startDate={{today}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "report"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "{{today}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.5 Revenue Report - Empty Range",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"totalBookings = 0 and totalRevenue = 0\", () => {",
+                  "    const r = pm.response.json();",
+                  "    pm.expect(r.totalBookings).to.eql(0);",
+                  "    pm.expect(Number(r.totalRevenue)).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/bookings/report?startDate=2020-01-01&endDate=2020-01-31",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "report"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2020-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2020-01-31"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
