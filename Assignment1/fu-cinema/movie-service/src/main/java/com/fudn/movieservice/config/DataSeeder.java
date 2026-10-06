@@ -68,7 +68,7 @@ public class DataSeeder implements CommandLineRunner {
                         GENRE_SCIFI, MovieStatus.NOW_SHOWING),
                 new Movie(MOVIE_HAUNTED, "Ngôi Nhà Ma Ám", "Một gia đình chuyển đến căn nhà cổ ở Đà Lạt.",
                         "Trần Hữu Tấn", 100, "Tiếng Việt", AgeRating.T18, LocalDate.of(2026, 9, 27),
-                        GENRE_HORROR, MovieStatus.NOW_SHOWING),
+                        GENRE_ACTION, MovieStatus.NOW_SHOWING),
                 new Movie(MOVIE_ROBOT, "Robot Nhỏ Phiêu Lưu Ký", "Chú robot nhỏ đi tìm đường về nhà.",
                         "Anna Lee", 95, "English", AgeRating.P, LocalDate.of(2026, 11, 15),
                         GENRE_ANIMATION, MovieStatus.COMING_SOON),
