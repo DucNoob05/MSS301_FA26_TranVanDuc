@@ -93,6 +93,17 @@
             <version>4.2.3</version>
             <scope>test</scope>
         </dependency>
+        <!-- TODO DOC-9: Springdoc OpenAPI -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+            <version>2.5.0</version>
+        </dependency>
     </dependencies>
 
     <!-- TODO 3.1: Spring Cloud BOM -->
