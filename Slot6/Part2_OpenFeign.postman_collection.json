@@ -1,0 +1,100 @@
+{
+  "info": {
+    "_postman_id": "d5e6f7a8-9b0c-1d2e-3f4a-5b6c7d8e9f0a",
+    "name": "MSS301 - Part 2 OpenFeign",
+    "description": "Postman test collection for Part 2 OpenFeign (Order Service to Inventory Service communication).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "TC01 - POST Place Order - In Stock (quantity <= 100)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201 Created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Order placed successfully\", function () {",
+              "    pm.expect(pm.response.text()).to.eql(\"Order Placed Successfully\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"skuCode\": \"iphone_15\",\n  \"price\": 1000,\n  \"quantity\": 100\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/order",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "api",
+            "order"
+          ]
+        }
+      }
+    },
+    {
+      "name": "TC02 - POST Place Order - Out of Stock (quantity = 101)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 500 Internal Server Error\", function () {",
+              "    pm.response.to.have.status(500);",
+              "});",
+              "",
+              "pm.test(\"Response contains out of stock message\", function () {",
+              "    pm.expect(pm.response.text()).to.include(\"is not in stock\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"skuCode\": \"iphone_15\",\n  \"price\": 1000,\n  \"quantity\": 101\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/order",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "api",
+            "order"
+          ]
+        }
+      }
+    }
+  ]
+}
