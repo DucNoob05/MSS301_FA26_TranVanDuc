@@ -22,5 +22,6 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private SagaStatus sagaStatus;
 
+    @Column(length = 1000)
     private String failureReason;
 }
