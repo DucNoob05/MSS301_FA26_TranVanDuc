@@ -40,6 +40,7 @@ services:
       - "8081:8081"
     environment:
       DB_HOST: sqlserver
+      DB_PORT: 1433
       DB_PASSWORD: "${DB_PASSWORD}"
       JWT_SECRET: "${JWT_SECRET}"
       JWT_EXPIRATION: "${JWT_EXPIRATION}"
@@ -54,6 +55,7 @@ services:
       - "8082:8082"
     environment:
       DB_HOST: sqlserver
+      DB_PORT: 1433
       DB_PASSWORD: "${DB_PASSWORD}"
     depends_on:
       db-init:
@@ -65,6 +67,7 @@ services:
       - "8083:8083"
     environment:
       DB_HOST: sqlserver
+      DB_PORT: 1433
       DB_PASSWORD: "${DB_PASSWORD}"
       BRAND_SERVICE_URL: "http://ms-brand:8082"
       SAGA_FAULT_INJECTION: "${SAGA_FAULT_INJECTION:-true}"   # mặc định true để demo; production: false
